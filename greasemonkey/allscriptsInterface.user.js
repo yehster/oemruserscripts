@@ -17,8 +17,9 @@ var pages={
     def: "/default.aspx",
     allergy: "/PatientAllergy.aspx",
     Login: "/Login.aspx",
-    oemrMain: "/openemr/interface/main/main_title.php",
-    oemrDemo: "openemr/interface/patient_file/summary/demographics.php"
+    oemrMain: "/interface/main/main_title.php",
+    oemrDemo: "/interface/patient_file/summary/demographics.php",
+    oemrDemoFull: "/interface/patient_file/summary/demographics_full.php"
 }
 
 var asContID={
@@ -31,6 +32,9 @@ var asContID={
     btnSearch: "ctl00_ContentPlaceHolder1_PatientSearch_btnSearch"
 }
 
+var asAddPatientControls={
+    btnAllergy: "ctl00_ContentPlaceHolder1_btnAddAllergy"
+}
 
 function resetInfo()
 {
@@ -61,7 +65,7 @@ function findPatientInfo()
 {
     text=$(this).html()
     marker="top.window.parent.left_nav.setPatient("
-    loc=text.indexOf(marker);
+    var loc=text.indexOf(marker);
     if(loc>=0)
     {
         resetInfo();
@@ -154,7 +158,7 @@ function asFindPatientInResults()
                 {
                     rowID=$(this).find("input[id]").attr("id");                    
                     safeClick(rowID);
-                    asCheckPatientInfo();
+                    
                 }
         }
 }
@@ -175,6 +179,54 @@ function asCheckPatientInfo()
         }
 
 }
+function asSearchDispatcher()
+{
+       asCheckPatientInfo();
+       if(GM_getValue("searchState").indexOf("not found")==0)
+        {
+            asPopulateAndSearchPatientInfo();
+        }
+        if(GM_getValue("searchState").indexOf("searching")==0)
+        {
+            tblViewPatients=$("#"+asContID['tblViewPatients']);
+            if(tblViewPatients.length>0)
+            {
+                GM_setValue("searchState","results scanning")
+                rows=tblViewPatients.find("tbody tr");
+                rows.each(asFindPatientInResults);
+            }
+        }    
+}
+
+function processOEMRDemographics(data)
+{
+    $("#demoLoading").hide();
+//    window.alert(data.responseText);
+}
+function loadDemographicsFromOpenEMR()
+{
+    demoFullURL=GM_getValue("OpenEMR Server")+pages['oemrDemoFull'];
+    loading=$("#demoLoading");
+    if(loading.length===0)
+        {
+            $("#gmOEMRImport").before("<SPAN id='demoLoading' float:right>Loading</SPAN>")    
+            loading=$("#demoLoading");
+        }
+        loading.show();
+GM_xmlhttpRequest({
+  method: "GET",
+  url:     demoFullURL,
+  onload: processOEMRDemographics
+});
+}
+function asAddPatientUpdate()
+{
+
+    btnAll=$("#"+asAddPatientControls['btnAllergy']);
+    btnAll.after("<DIV id='GMControls' style='float:right;'></DIV>");
+    $("#GMControls").append("<input type='button' value='Load from OpenEMR' id='gmOEMRImport' >")
+    $("#gmOEMRImport").click(loadDemographicsFromOpenEMR);
+}
 var loc=window.location.href;
 if(loc.indexOf(pages['interstitial'])>=0)
     {
@@ -190,35 +242,26 @@ if(loc.indexOf(pages['interstitial'])>=0)
 
 if((loc.toLowerCase().indexOf(pages['def'])>=0) || (loc.indexOf(pages['Login'])>=0))
     {
-        $(document).ready(asCheckPatientInfo)
-       if(GM_getValue("searchState").indexOf("not found")==0)
-        {
-            $(document).ready(asPopulateAndSearchPatientInfo());
-        }
-        if(GM_getValue("searchState").indexOf("searching")==0)
-            {
-                $(document).ready( function()
-                    {
-                        tblViewPatients=$("#"+asContID['tblViewPatients']);
-                        if(tblViewPatients.length>0)
-                        {
-                            rows=tblViewPatients.find("tbody tr");
-                            rows.each(asFindPatientInResults);
-                        }
-                    }
-                    );
-            }
+        $(document).ready(asSearchDispatcher);
     }
 
 
-
+if(loc.indexOf(pages['addPatient'])>=0)
+    {
+        $(document).ready(asAddPatientUpdate)
+    }
 if(loc.indexOf(pages['oemrMain'])>=0)
     {
         allScriptsLink="<a href='https://eprescribe.allscripts.com/default.aspx' target='Allscripts' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
         $("#current_patient_block").append(allScriptsLink);
     }
-
-if(loc.indexOf(pages['oemrDemo'])>=0)
+pos=loc.indexOf(pages['oemrDemo']);
+if(pos>=0)
     {
+        
         $("script[language='JavaScript']").each(findPatientInfo);
+        server=loc.substr(0,pos);
+
+        GM_setValue("OpenEMR Server",server);
+
     }
