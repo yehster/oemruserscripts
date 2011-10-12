@@ -12,6 +12,12 @@ else
 	Send {F5}
 }
 return
+F6::
+if(InStr(winTitle,"OpenEMR"))
+{
+	WinActivate, ahk_class SunAwtFrame
+}
+return
 #IfWinActive ahk_class SunAwtFrame
 F5::
 	Send ^s
@@ -22,7 +28,7 @@ F5::
 		WinWaitActive, Greasemonkey Installation,,6
 		if(ErrorLevel=0)
 		{
-			sleep, 4100
+			sleep, 3500
 			send, {Enter}
 			WinWaitActive, ahk_class MozillaWindowClass
 			if(ErrorLevel=0)

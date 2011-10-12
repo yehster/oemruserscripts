@@ -23,10 +23,12 @@ var pages={
 
 var asContID={
     lblPatientName: "ctl00_lblPatientName",
-    txtPatLNAME: "ctl00_ContentPlaceHolder1_PatientSearch_txtLastName_text",
-    txtPatFNAME: "ctl00_ContentPlaceHolder1_PatientSearch_txtFirstName_text",
-    txtPatDOB: "ctl00_ContentPlaceHolder1_PatientSearch_rdiDOB_text",
-    tblViewPatients: "ctl00_ContentPlaceHolder1_grdViewPatients_ctl00"
+    lblGenderDOB: "ctl00_lblGenderDob",
+    txtPatLNAME: "ctl00_ContentPlaceHolder1_PatientSearch_txtLastName",
+    txtPatFNAME: "ctl00_ContentPlaceHolder1_PatientSearch_txtFirstName",
+    txtPatDOB: "ctl00_ContentPlaceHolder1_PatientSearch_rdiDOB",
+    tblViewPatients: "ctl00_ContentPlaceHolder1_grdViewPatients_ctl00",
+    btnSearch: "ctl00_ContentPlaceHolder1_PatientSearch_btnSearch"
 }
 
 
@@ -48,7 +50,7 @@ function resetInfo()
     GM_setValue("MedSTR",""); // The Med Strength
     GM_setValue("MedSIG",""); // The Med SIG
     
-    GM_setValue("patientSearch","not started");
+    GM_setValue("searchState","not found");
     
 }
 
@@ -95,6 +97,7 @@ function findPatientInfo()
     }
 }
 
+
 function safeClick(id)
 {
         var element = document.getElementById(id);
@@ -103,6 +106,20 @@ function safeClick(id)
             element.click();
         }
 
+}
+function delayClick(elemID,delay)
+{
+
+        setTimeout(function() {
+         
+        
+        var element = document.getElementById(elemID);
+        if (element != null)
+        {
+            element.click();
+        }
+            
+        },delay);
 }
 function patDOB()
 {
@@ -117,10 +134,12 @@ function patDOB()
 
 function asPopulateAndSearchPatientInfo()
 {
+
+
     $("#"+asContID['txtPatLNAME']).val(GM_getValue("patientLNAME"));
     $("#"+asContID['txtPatFNAME']).val(GM_getValue("patientFNAME"));
-
-
+    safeClick(asContID['btnSearch']);
+    GM_setValue("searchState","searching");    
 }
 
 function asFindPatientInResults()
@@ -129,12 +148,32 @@ function asFindPatientInResults()
     foundPatient=myHTML.indexOf(GM_getValue("patientLNAME")+", "+GM_getValue("patientFNAME"));
     if(foundPatient>=0)
         {
+
             foundDOB=myHTML.indexOf(patDOB(),foundPatient);
             if(foundDOB>=0)
                 {
-                    safeClick($(this).find("input[id]").attr("id"));
+                    rowID=$(this).find("input[id]").attr("id");                    
+                    safeClick(rowID);
+                    asCheckPatientInfo();
                 }
         }
+}
+
+function asCheckPatientInfo()
+{
+    pn=$("#"+asContID['lblPatientName']).text();
+    foundPatient=pn.indexOf(GM_getValue("patientLNAME")+", "+GM_getValue("patientFNAME"));
+    if(foundPatient===0)
+        {
+            DOB=$("#"+asContID['lblGenderDOB']).text();
+            foundDOB=DOB.indexOf(patDOB());
+            if(foundDOB>=0)
+            {
+                GM_setValue("searchState","found");
+            }
+
+        }
+
 }
 var loc=window.location.href;
 if(loc.indexOf(pages['interstitial'])>=0)
@@ -151,15 +190,23 @@ if(loc.indexOf(pages['interstitial'])>=0)
 
 if((loc.toLowerCase().indexOf(pages['def'])>=0) || (loc.indexOf(pages['Login'])>=0))
     {
-//        if(GM_getValue("patientFound")=="not started")
+        $(document).ready(asCheckPatientInfo)
+       if(GM_getValue("searchState").indexOf("not found")==0)
         {
             $(document).ready(asPopulateAndSearchPatientInfo());
         }
-        tblViewPatients=$("#"+asContID['tblViewPatients']);
-        if(tblViewPatients.length>0)
+        if(GM_getValue("searchState").indexOf("searching")==0)
             {
-                rows=tblViewPatients.find("tbody tr");
-                rows.each(asFindPatientInResults);
+                $(document).ready( function()
+                    {
+                        tblViewPatients=$("#"+asContID['tblViewPatients']);
+                        if(tblViewPatients.length>0)
+                        {
+                            rows=tblViewPatients.find("tbody tr");
+                            rows.each(asFindPatientInResults);
+                        }
+                    }
+                    );
             }
     }
 

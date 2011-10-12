@@ -12,6 +12,12 @@ else
 	Send {F5}
 }
 return
+F6::
+if(InStr(winTitle,"OpenEMR"))
+{
+	WinActivate, ahk_class SunAwtFrame
+}
+return
 #IfWinActive ahk_class SunAwtFrame
 F5::
 	Send ^s
@@ -34,7 +40,8 @@ F5::
 	}
 	if(InStr(winTitle,"oemrdoc"))
 	{
-		MsgBox, "OEMRDOC"
+		Send ^s
+		WinActivate, ahk_class MozillaWindowClass	
 	}
 	return
  
