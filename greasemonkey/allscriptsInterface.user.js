@@ -33,7 +33,9 @@ var asContID={
 }
 
 var asAddPatientControls={
-    btnAllergy: "ctl00_ContentPlaceHolder1_btnAddAllergy"
+    btnAllergy: "ctl00_ContentPlaceHolder1_btnAddAllergy",
+    txtPatFNAME: "ctl00_ContentPlaceHolder1_txtFName",
+    txtPatLNAME: "ctl00_ContentPlaceHolder1_txtLName"
 }
 
 function resetInfo()
@@ -116,20 +118,7 @@ function safeClick(id)
         }
 
 }
-function delayClick(elemID,delay)
-{
 
-        setTimeout(function() {
-         
-        
-        var element = document.getElementById(elemID);
-        if (element != null)
-        {
-            element.click();
-        }
-            
-        },delay);
-}
 function patDOB()
 {
     retVal=GM_getValue("patientDOBMonth");
@@ -215,16 +204,40 @@ function findInHTML(data,controlID)
     return retVal;
 }
 
+function findInSelect(data,controlID)
+{
+    idTag="id='"+controlID+"'";
+    locID=data.indexOf(idTag)+idTag.length;
+    const selected="selected";
+    
+    
+    selectedLoc=data.indexOf(selected,locID);
+    const option="</option>";
+    locOption=data.indexOf(option,selectedLoc);
+    retVal=data.substr(selectedLoc,locOption-selectedLoc);
+    retVal=retVal.substr(retVal.indexOf(">")+1);
+    return retVal;
+}
 function processOEMRDemographics(data)
 {
     $("#demoLoading").hide();
     text=data.responseText;
+    text=text.substr(text.indexOf("<form"));
     fname=findInHTML(text,"form_fname");
     lname=findInHTML(text,"form_lname");
     dob=findInHTML(text,"form_DOB");
     zip=findInHTML(text,"form_postal_code");
-    window.alert(fname+":"+lname+":"+patDOB()+":"+zip);
-    setOEMRDOB(dob);
+    address=findInHTML(text,"form_street");
+    city=findInHTML(text,"form_city");
+    sex=findInSelect(text,"form_sex");
+    state=findInSelect(text,"form_state");
+    home_phone=findInHTML(text,"form_phone_home");
+    mobile_phone=findInHTML(text,"form_phone_cell");
+    setOEMRDOB(dob);    
+    window.alert(fname+":"+lname+":"+patDOB()+":"+sex+":"+address+":"+city+":"+state+":"+zip);
+    $("#"+asAddPatientControls['txtPatFNAME']).val(fname);
+    $("#"+asAddPatientControls['txtPatLNAME']).val(lname);
+
 
 
 }
