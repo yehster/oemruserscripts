@@ -60,6 +60,18 @@ function resetInfo()
 
 //TODO: Can I add a dialog div that displays the drugs from OpenEMR?
 
+function setOEMRDOB(DOB)
+{
+        DOBParts=DOB.split("-");
+        DOBYear=DOBParts[0].substr(0,4);
+        DOBMonth=DOBParts[1].substr(0,2);
+        DOBDay=DOBParts[2].substr(0,2);
+
+    
+        GM_setValue("patientDOBYear",DOBYear);
+        GM_setValue("patientDOBMonth",DOBMonth);
+        GM_setValue("patientDOBDay",DOBDay);    
+}
 // Retrieve the patient information from the OpenEMR demographics page.
 function findPatientInfo()
 {
@@ -84,18 +96,11 @@ function findPatientInfo()
         AgeHeader="Age:";
         start = DOBHeader.length + dobSTR.indexOf(DOBHeader)
         DOB=dobSTR.substr(start,(dobSTR.indexOf(AgeHeader)-start));
-        DOB.replace(" ","");
-        DOBParts=DOB.split("-");
-        DOBYear=DOBParts[0].substr(0,4);
-        DOBMonth=DOBParts[1].substr(0,2);
-        DOBDay=DOBParts[2].substr(0,2);
-
+        setOEMRDOB(DOB);
+        
         GM_setValue("patientFNAME",fname);
         GM_setValue("patientLNAME",lname);
     
-        GM_setValue("patientDOBYear",DOBYear);
-        GM_setValue("patientDOBMonth",DOBMonth);
-        GM_setValue("patientDOBDay",DOBDay);
         
         
     }
@@ -198,10 +203,30 @@ function asSearchDispatcher()
         }    
 }
 
+function findInHTML(data,controlID)
+{
+    idTag="id='"+controlID+"'";
+    locID=data.indexOf(idTag);
+    const val="value='";
+    locVal=data.indexOf(val,locID)+val.length;
+    valEnd=data.indexOf("'",locVal)
+
+    retVal=data.substr(locVal,valEnd-locVal);
+    return retVal;
+}
+
 function processOEMRDemographics(data)
 {
     $("#demoLoading").hide();
-//    window.alert(data.responseText);
+    text=data.responseText;
+    fname=findInHTML(text,"form_fname");
+    lname=findInHTML(text,"form_lname");
+    dob=findInHTML(text,"form_DOB");
+    zip=findInHTML(text,"form_postal_code");
+    window.alert(fname+":"+lname+":"+patDOB()+":"+zip);
+    setOEMRDOB(dob);
+
+
 }
 function loadDemographicsFromOpenEMR()
 {
@@ -225,6 +250,8 @@ function asAddPatientUpdate()
     btnAll=$("#"+asAddPatientControls['btnAllergy']);
     btnAll.after("<DIV id='GMControls' style='float:right;'></DIV>");
     $("#GMControls").append("<input type='button' value='Load from OpenEMR' id='gmOEMRImport' >")
+    $("#GMControls").append("<div  id='gmOEMRInfo' style='display:none' >OpenEMRInfo</DIV")
+
     $("#gmOEMRImport").click(loadDemographicsFromOpenEMR);
 }
 var loc=window.location.href;
