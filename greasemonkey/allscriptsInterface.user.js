@@ -10,10 +10,34 @@
 // @require http://code.jquery.com/jquery-1.6.4.min.js
 // ==/UserScript==
 
+// +-----------------------------------------------------------------------------+
+// Copyright (C) 2011 IntegralEMR LLC <kevin.y@integralemr.com>
+//
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version 2
+// of the License, or (at your option) any later version.
+//
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+//
+// A copy of the GNU General Public License is included along with this program:
+// openemr/interface/login/GnuGPL.html
+// For more information write to the Free Software
+// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+//
+// Author:   Kevin Yeh <kevin.y@integralemr.com>
+//
+// +------------------------------------------------------------------------------+
 
 var pages={
     interstitial: "/InterstitialAd.aspx",
-    addPatient: "/AddPatient.aspx?Mode=Add",
+    addPatient: "/AddPatient.aspx",
     def: "/default.aspx",
     allergy: "/PatientAllergy.aspx",
     Login: "/Login.aspx",
@@ -133,7 +157,7 @@ function asPopulateAndSearchPatientInfo()
     $("#"+asContID['txtPatLNAME']).val(GM_getValue("patientLNAME"));
     $("#"+asContID['txtPatFNAME']).val(GM_getValue("patientFNAME"));
     safeClick(asContID['btnSearch']);
-    GM_setValue("searchState","searching");    
+    $(document).unload(    GM_setValue("searchState","searching")  );
 }
 
 function asFindPatientInResults()
@@ -148,7 +172,6 @@ function asFindPatientInResults()
                 {
                     rowID=$(this).find("input[id]").attr("id");                    
                     safeClick(rowID);
-                    
                 }
         }
 }
@@ -330,8 +353,9 @@ if(loc.indexOf(pages['addPatient'])>=0)
     }
 if(loc.indexOf(pages['oemrMain'])>=0)
     {
-        allScriptsLink="<a href='https://eprescribe.allscripts.com/default.aspx' target='Allscripts' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
+        allScriptsLink="<a id='gmASLink' href='https://eprescribe.allscripts.com/default.aspx' target='Allscripts' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
         $("#current_patient_block").append(allScriptsLink);
+//        $('#gmASLink').attr("onclick","GM_setValue('searchState','not found')");
     }
 pos=loc.indexOf(pages['oemrDemo']);
 if(pos>=0)
