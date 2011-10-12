@@ -32,11 +32,7 @@ var asContID={
     btnSearch: "ctl00_ContentPlaceHolder1_PatientSearch_btnSearch"
 }
 
-var asAddPatientControls={
-    btnAllergy: "ctl00_ContentPlaceHolder1_btnAddAllergy",
-    txtPatFNAME: "ctl00_ContentPlaceHolder1_txtFName",
-    txtPatLNAME: "ctl00_ContentPlaceHolder1_txtLName"
-}
+
 
 function resetInfo()
 {
@@ -212,11 +208,46 @@ function findInSelect(data,controlID)
     
     
     selectedLoc=data.indexOf(selected,locID);
-    const option="</option>";
-    locOption=data.indexOf(option,selectedLoc);
-    retVal=data.substr(selectedLoc,locOption-selectedLoc);
-    retVal=retVal.substr(retVal.indexOf(">")+1);
+
+    
+    locTagEnd=data.indexOf(">",selectedLoc);
+    locTagBeg=data.lastIndexOf("<",locTagEnd);
+    tag=data.substr(locTagBeg,locTagEnd-locTagBeg);
+
+    const val="value='";
+    locVal=tag.indexOf(val)+val.length;
+    locQuote=tag.indexOf("'",locVal);
+    retVal=tag.substr(locVal,locQuote-locVal);
     return retVal;
+}
+
+var asAddPatientControls={
+    btnAllergy: "ctl00_ContentPlaceHolder1_btnAddAllergy",
+    txtPatFNAME: "ctl00_ContentPlaceHolder1_txtFName",
+    txtPatLNAME: "ctl00_ContentPlaceHolder1_txtLName",
+    txtPatDOB: "ctl00_ContentPlaceHolder1_txtDOB_text",
+    txtPatAddr1: "ctl00_ContentPlaceHolder1_txtAddress1",
+    txtPatPhone: "ctl00_ContentPlaceHolder1_txtPhone",
+    txtPatMobilePhone: "ctl00_ContentPlaceHolder1_txtMobilePhone",
+    txtPatCity: "ctl00_ContentPlaceHolder1_txtCity",
+    txtPatZIP: "ctl00_ContentPlaceHolder1_txtZip",
+    selGender: "ctl00_ContentPlaceHolder1_DDLGender",
+    selState:"ctl00_ContentPlaceHolder1_ddlState"
+}
+
+function chooseSelect(control,option)
+{
+  sel=document.getElementById(control);
+
+  for(idx=0;idx<sel.options.length;idx++)
+      {
+          opt=sel.options[idx];
+          if(opt.value==option)
+              {
+                  sel.selectedIndex=idx;
+                  opt.click();
+              }
+      }
 }
 function processOEMRDemographics(data)
 {
@@ -234,12 +265,19 @@ function processOEMRDemographics(data)
     home_phone=findInHTML(text,"form_phone_home");
     mobile_phone=findInHTML(text,"form_phone_cell");
     setOEMRDOB(dob);    
-    window.alert(fname+":"+lname+":"+patDOB()+":"+sex+":"+address+":"+city+":"+state+":"+zip);
+//    window.alert(fname+":"+lname+":"+patDOB()+":"+sex+":"+address+":"+city+":"+state+":"+zip);
     $("#"+asAddPatientControls['txtPatFNAME']).val(fname);
     $("#"+asAddPatientControls['txtPatLNAME']).val(lname);
+    $("#"+asAddPatientControls['txtPatDOB']).val(patDOB());
+    $("#"+asAddPatientControls['txtPatAddr1']).val(address);
+    $("#"+asAddPatientControls['txtPatPhone']).val(home_phone);
+    $("#"+asAddPatientControls['txtPatMobilePhone']).val(mobile_phone);
+    $("#"+asAddPatientControls['txtPatCity']).val(city);
+    $("#"+asAddPatientControls['txtPatZIP']).val(zip);
 
-
-
+    
+    chooseSelect(asAddPatientControls['selGender'],sex[0]);
+    chooseSelect(asAddPatientControls['selState'],state)
 }
 function loadDemographicsFromOpenEMR()
 {
