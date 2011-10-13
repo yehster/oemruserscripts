@@ -272,13 +272,44 @@ function chooseSelect(control,option)
               }
       }
 }
+function removeTags(text,tag,endTag)
+{
+    tag="<"+tag;
+    loc=text.indexOf(tag);
+    while(loc>=0)
+        {
+            endMarker=text.indexOf(endTag,loc+tag.length);
+            text=text.substr(0,loc)+text.substr(endMarker+endTag.length);
+
+            loc=text.indexOf(tag);
+        }
+        return text;
+}
+function extractTag(text,tag,endTag)
+{
+    loc=text.indexOf(tag);
+    end=text.lastIndexOf(endTag);
+    return text.substr(loc,end+endTag.length-loc);
+}
+
+function setAddPatientText(asControl,oemrcontrol)
+{
+    val=$("#"+oemrcontrol).val();
+    $("#"+asAddPatientControls[asControl]).val(val);
+}
+
 function processOEMRDemographics(data)
 {
     $("#demoLoading").hide();
     text=data.responseText;
     text=text.substr(text.indexOf("<form"));
-    fname=findInHTML(text,"form_fname");
-    lname=findInHTML(text,"form_lname");
+    text=removeTags(text,"img",">");
+    text=removeTags(text,"a","</a>");
+    text=extractTag(text,"<form","</form>")
+    $("#gmOEMRInfo").append(text);
+    $("#gmOEMRInfo img").remove();
+    setAddPatientText('txtPatFNAME',"form_fname");
+    setAddPatientText('txtPatLNAME',"form_lname");
     dob=findInHTML(text,"form_DOB");
     zip=findInHTML(text,"form_postal_code");
     address=findInHTML(text,"form_street");
@@ -288,9 +319,7 @@ function processOEMRDemographics(data)
     home_phone=findInHTML(text,"form_phone_home");
     mobile_phone=findInHTML(text,"form_phone_cell");
     setOEMRDOB(dob);    
-//    window.alert(fname+":"+lname+":"+patDOB()+":"+sex+":"+address+":"+city+":"+state+":"+zip);
-    $("#"+asAddPatientControls['txtPatFNAME']).val(fname);
-    $("#"+asAddPatientControls['txtPatLNAME']).val(lname);
+    
     $("#"+asAddPatientControls['txtPatDOB']).val(patDOB());
     $("#"+asAddPatientControls['txtPatAddr1']).val(address);
     $("#"+asAddPatientControls['txtPatPhone']).val(home_phone);
@@ -324,7 +353,7 @@ function asAddPatientUpdate()
     btnAll=$("#"+asAddPatientControls['btnAllergy']);
     btnAll.after("<DIV id='GMControls' style='float:right;'></DIV>");
     $("#GMControls").append("<input type='button' value='Load from OpenEMR' id='gmOEMRImport' >")
-    $("#GMControls").append("<div  id='gmOEMRInfo' style='display:none' >OpenEMRInfo</DIV")
+    $("#GMControls").append("<div  id='gmOEMRInfo' style='display:none;' >OpenEMRInfo</DIV")
 
     $("#gmOEMRImport").click(loadDemographicsFromOpenEMR);
 }
