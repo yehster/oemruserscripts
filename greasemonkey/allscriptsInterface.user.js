@@ -211,39 +211,6 @@ function asSearchDispatcher()
         }    
 }
 
-function findInHTML(data,controlID)
-{
-    idTag="id='"+controlID+"'";
-    locID=data.indexOf(idTag);
-    const val="value='";
-    locVal=data.indexOf(val,locID)+val.length;
-    valEnd=data.indexOf("'",locVal)
-
-    retVal=data.substr(locVal,valEnd-locVal);
-    return retVal;
-}
-
-function findInSelect(data,controlID)
-{
-    idTag="id='"+controlID+"'";
-    locID=data.indexOf(idTag)+idTag.length;
-    const selected="selected";
-    
-    
-    selectedLoc=data.indexOf(selected,locID);
-
-    
-    locTagEnd=data.indexOf(">",selectedLoc);
-    locTagBeg=data.lastIndexOf("<",locTagEnd);
-    tag=data.substr(locTagBeg,locTagEnd-locTagBeg);
-
-    const val="value='";
-    locVal=tag.indexOf(val)+val.length;
-    locQuote=tag.indexOf("'",locVal);
-    retVal=tag.substr(locVal,locQuote-locVal);
-    return retVal;
-}
-
 var asAddPatientControls={
     btnAllergy: "ctl00_ContentPlaceHolder1_btnAddAllergy",
     txtPatFNAME: "ctl00_ContentPlaceHolder1_txtFName",
@@ -308,28 +275,29 @@ function processOEMRDemographics(data)
     text=extractTag(text,"<form","</form>")
     $("#gmOEMRInfo").append(text);
     $("#gmOEMRInfo img").remove();
+    
     setAddPatientText('txtPatFNAME',"form_fname");
     setAddPatientText('txtPatLNAME',"form_lname");
-    dob=findInHTML(text,"form_DOB");
-    zip=findInHTML(text,"form_postal_code");
-    address=findInHTML(text,"form_street");
-    city=findInHTML(text,"form_city");
-    sex=findInSelect(text,"form_sex");
-    state=findInSelect(text,"form_state");
-    home_phone=findInHTML(text,"form_phone_home");
-    mobile_phone=findInHTML(text,"form_phone_cell");
-    setOEMRDOB(dob);    
+    setAddPatientText('txtPatLNAME',"form_lname");
     
-    $("#"+asAddPatientControls['txtPatDOB']).val(patDOB());
-    $("#"+asAddPatientControls['txtPatAddr1']).val(address);
-    $("#"+asAddPatientControls['txtPatPhone']).val(home_phone);
-    $("#"+asAddPatientControls['txtPatMobilePhone']).val(mobile_phone);
-    $("#"+asAddPatientControls['txtPatCity']).val(city);
-    $("#"+asAddPatientControls['txtPatZIP']).val(zip);
+    setAddPatientText('txtPatZIP',"form_postal_code");
+    setAddPatientText('txtPatAddr1',"form_street");
+    setAddPatientText('txtPatCity',"form_city");
+    setAddPatientText('txtPatPhone',"form_phone_home");
+    setAddPatientText('txtPatMobilePhone',"form_phone_cell");
 
+
+    sex=$("#form_sex").val();
+    state=$("#form_state").val();
+      
     
     chooseSelect(asAddPatientControls['selGender'],sex[0]);
     chooseSelect(asAddPatientControls['selState'],state)
+
+    dob=$("#form_DOB").val();
+    setOEMRDOB(dob);
+    $("#"+asAddPatientControls['txtPatDOB']).val(patDOB());
+    
 }
 function loadDemographicsFromOpenEMR()
 {
