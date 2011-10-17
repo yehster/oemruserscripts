@@ -94,40 +94,6 @@ function setOEMRDOB(DOB)
         GM_setValue("patientDOBMonth",DOBMonth);
         GM_setValue("patientDOBDay",DOBDay);    
 }
-// Retrieve the patient information from the OpenEMR demographics page.
-function findPatientInfo()
-{
-    text=$(this).html()
-    marker="top.window.parent.left_nav.setPatient("
-    var loc=text.indexOf(marker);
-    if(loc>=0)
-    {
-        resetInfo();
-        //window.alert(text);
-        end=text.indexOf(")",loc)
-        rest=text.substr(loc+marker.length,end-(loc+marker.length));
-        toks=rest.split(",");
-        name=toks[0]
-        nameParts=name.split(" ");
-        fname=nameParts[0].replace("'","");
-        lname=nameParts[1].replace("'","");
-        pid=toks[1];
-        pubpid=toks[2];
-        dobSTR=toks[4]
-        DOBHeader="DOB: ";
-        AgeHeader="Age:";
-        start = DOBHeader.length + dobSTR.indexOf(DOBHeader)
-        DOB=dobSTR.substr(start,(dobSTR.indexOf(AgeHeader)-start));
-        setOEMRDOB(DOB);
-        
-        GM_setValue("patientFNAME",fname);
-        GM_setValue("patientLNAME",lname);
-    
-        
-        
-    }
-}
-
 
 function safeClick(id)
 {
@@ -221,6 +187,7 @@ var asAddPatientControls={
     txtPatMobilePhone: "ctl00_ContentPlaceHolder1_txtMobilePhone",
     txtPatCity: "ctl00_ContentPlaceHolder1_txtCity",
     txtPatZIP: "ctl00_ContentPlaceHolder1_txtZip",
+    txtPatMRN: "ctl00_ContentPlaceHolder1_txtMRN",
     selGender: "ctl00_ContentPlaceHolder1_DDLGender",
     selState:"ctl00_ContentPlaceHolder1_ddlState"
 }
@@ -276,6 +243,9 @@ function processOEMRDemographics(data)
     $("#gmOEMRInfo").append(text);
     $("#gmOEMRInfo img").remove();
     
+    patID=$("#gmOEMRInfo").find("input[name='db_id']").val();
+    
+    $("#"+asAddPatientControls['txtPatMRN']).val(patID);
     setAddPatientText('txtPatFNAME',"form_fname");
     setAddPatientText('txtPatLNAME',"form_lname");
     setAddPatientText('txtPatLNAME',"form_lname");
@@ -350,17 +320,54 @@ if(loc.indexOf(pages['addPatient'])>=0)
     }
 if(loc.indexOf(pages['oemrMain'])>=0)
     {
-        allScriptsLink="<a id='gmASLink' href='https://eprescribe.allscripts.com/default.aspx' target='Allscripts' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
-        $("#current_patient_block").append(allScriptsLink);
-//        $('#gmASLink').attr("onclick","GM_setValue('searchState','not found')");
+        $(document).ready
+        (
+            function()
+            {
+                allScriptsLink="<a id='gmASLink' href='https://eprescribe.allscripts.com/default.aspx' target='Allscripts' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
+                $("#current_patient_block").append(allScriptsLink);
+                
+            }
+        )
     }
+
 pos=loc.indexOf(pages['oemrDemo']);
 if(pos>=0)
     {
         
-        $("script[language='JavaScript']").each(findPatientInfo);
-        server=loc.substr(0,pos);
+        $(document).ready(
+            function()
+            {
+                resetInfo();
+                server=loc.substr(0,pos);
+                GM_setValue("OpenEMR Server",server);
+                
+                whoDIV=$("td.label:contains('DOB:')").parents("div.tab");
 
-        GM_setValue("OpenEMR Server",server);
+                DOB=whoDIV.find("td.label:contains('DOB:')").next();
+                setOEMRDOB(DOB.text());
+                Gender=whoDIV.find("td.label:contains('Sex:')").next();
+                
+               
+                patName=$("span.title").text();
+                splitName=patName.replace(" ","").split(",");
+                fname=splitName[1];
+                lname=splitName[0];
+
+                patIDHREF=$("span:contains('Delete')").parent("a.css_button[href]").attr("href");
+                deleterHREFInfo="../deleter.php?patient=";
+                loc=patIDHREF.indexOf("deleterHREFInfo")+deleterHREFInfo.length+1;
+                patID=parseInt(patIDHREF.substr(loc));
+
+                GM_setValue("patientPID",patID);
+                GM_setValue("patientFNAME",fname);
+                GM_setValue("patientLNAME",lname);                
+
+
+
+                
+            }
+        );
+       
 
     }
