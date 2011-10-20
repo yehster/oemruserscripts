@@ -119,11 +119,11 @@ function patDOB()
 function asPopulateAndSearchPatientInfo()
 {
 
-
     $("#"+asContID['txtPatLNAME']).val(GM_getValue("patientLNAME"));
     $("#"+asContID['txtPatFNAME']).val(GM_getValue("patientFNAME"));
+    $(document).unload(GM_setValue("searchState","searching")  );
     safeClick(asContID['btnSearch']);
-    $(document).unload(    GM_setValue("searchState","searching")  );
+    
 }
 
 function asFindPatientInResults()
@@ -160,6 +160,12 @@ function asCheckPatientInfo()
 }
 function asSearchDispatcher()
 {
+        if($("#txtUserName").length>0)
+            {
+                // This is the initial login screen and we should just abort.
+                return;
+            }
+            
        asCheckPatientInfo();
        if(GM_getValue("searchState").indexOf("not found")==0)
         {
