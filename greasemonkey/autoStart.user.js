@@ -13,7 +13,8 @@
 var pages={
     leftNav: "/openemr/interface/main/left_nav.php",
     logon: "/openemr/interface/login/login.php",
-    patientSelect: "/openemr/interface/main/finder/patient_select.php"
+    patientSelect: "/openemr/interface/main/finder/patient_select.php",
+    demo: "/openemr/interface/patient_file/summary/demographics.php"
 }
 function initializeStartupValue()
 {
@@ -41,6 +42,12 @@ function clickRow()
     unsafeWindow.$("#1").click();
 }
 
+function addDoctrine()
+{
+    table=$("div.section-header").parent("td").parent.("tr").parent("tbody");
+    window.alert(table.length);
+}
+
 var loc=window.location.href;
 
 if(loc.indexOf(pages['logon'])>=0)
@@ -60,5 +67,30 @@ else if(loc.indexOf(pages['patientSelect'])>=0)
             {
                 $(document).ready(clickRow);            
             }
+    
+    }
+else if(loc.indexOf(pages['demo'])>=0)
+    {
+        $(document).ready(
+            function()
+            {
+                anchor=$("a:contains('Issues')");
+                clinicalURL="http://192.168.1.60:5900/openemr/library/doctrine/ui/Summary/DisplayDocuments.php";
+                clinical=
+                    "<a href='"+clinicalURL+"'>Clinical</a>";
+                $.get(clinicalURL,{},
+                    function(data)
+                    {
+                        tr=$("div.section-header:first").parent("td").parent("tr");
+                        newSection="<tr><td>"+"<div class='notab'>"+data+"</div>"+"</td></tr>"
+                        tr.before(newSection);
+//                        window.alert(table.length);
+//                          window.alert(data);
+                    }
+                    );
+                anchor.after(clinical);
+                anchor.after("|");
+            }
+        );            
     
     }
