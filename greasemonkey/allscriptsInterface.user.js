@@ -95,6 +95,15 @@ function setOEMRDOB(DOB)
         GM_setValue("patientDOBDay",DOBDay);    
 }
 
+function safeFocus(id)
+{
+        var element = document.getElementById(id);
+        if (element != null)
+        {
+            element.focus();
+        }
+    
+}
 function safeClick(id)
 {
         var element = document.getElementById(id);
@@ -121,7 +130,8 @@ function asPopulateAndSearchPatientInfo()
 
     $("#"+asContID['txtPatLNAME']).val(GM_getValue("patientLNAME"));
     $("#"+asContID['txtPatFNAME']).val(GM_getValue("patientFNAME"));
-    $(document).unload(GM_setValue("searchState","searching")  );
+    
+    GM_setValue("searchState","searching") ;
     safeClick(asContID['btnSearch']);
     
 }
@@ -171,7 +181,8 @@ function asSearchDispatcher()
         {
             asPopulateAndSearchPatientInfo();
         }
-        if(GM_getValue("searchState").indexOf("searching")==0)
+        if((GM_getValue("searchState").indexOf("searching")==0) || 
+        (GM_getValue("searchState").indexOf("results scanning")==0))
         {
             tblViewPatients=$("#"+asContID['tblViewPatients']);
             if(tblViewPatients.length>0)
@@ -272,7 +283,9 @@ function processOEMRDemographics(data)
 
     dob=$("#form_DOB").val();
     setOEMRDOB(dob);
+    safeFocus(asAddPatientControls['txtPatDOB']);
     $("#"+asAddPatientControls['txtPatDOB']).val(patDOB());
+//    $("#"+asAddPatientControls['txtPatDOB']).blur();
     
 }
 function loadDemographicsFromOpenEMR()
@@ -330,7 +343,12 @@ if(loc.indexOf(pages['oemrMain'])>=0)
         (
             function()
             {
-                allScriptsLink="<a id='gmASLink' href='https://eprescribe.allscripts.com/default.aspx' target='Allscripts' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
+                allScriptsLink="<a id='gmASLink' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
+                $("#gmASLink").live({click:function()
+                    {
+                        winAS=window.open("https://eprescribe.allscripts.com/default.aspx","Allscripts");
+                        GM_setValue("searchState","not found");
+                    }});
                 $("#current_patient_block").append(allScriptsLink);
                 
             }

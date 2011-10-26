@@ -75,7 +75,7 @@ else if(loc.indexOf(pages['demo'])>=0)
             function()
             {
                 anchor=$("a:contains('Issues')");
-                clinicalURL="http://192.168.1.60:5900/openemr/library/doctrine/ui/Summary/DisplayDocuments.php";
+                clinicalURL="/openemr/library/doctrine/ui/Summary/DisplayDocuments.php";
                 clinical=
                     "<a href='"+clinicalURL+"'>Clinical</a>";
                 $.get(clinicalURL,{},
