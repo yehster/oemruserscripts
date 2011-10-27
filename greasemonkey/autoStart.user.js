@@ -71,26 +71,5 @@ else if(loc.indexOf(pages['patientSelect'])>=0)
     }
 else if(loc.indexOf(pages['demo'])>=0)
     {
-        $(document).ready(
-            function()
-            {
-                anchor=$("a:contains('Issues')");
-                clinicalURL="/openemr/library/doctrine/ui/Summary/DisplayDocuments.php";
-                clinical=
-                    "<a href='"+clinicalURL+"'>Clinical</a>";
-                $.get(clinicalURL,{},
-                    function(data)
-                    {
-                        tr=$("div.section-header:first").parent("td").parent("tr");
-                        newSection="<tr><td>"+"<div class='notab'>"+data+"</div>"+"</td></tr>"
-                        tr.before(newSection);
-//                        window.alert(table.length);
-//                          window.alert(data);
-                    }
-                    );
-                anchor.after(clinical);
-                anchor.after("|");
-            }
-        );            
     
     }

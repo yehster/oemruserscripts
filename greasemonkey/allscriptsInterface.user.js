@@ -343,11 +343,13 @@ if(loc.indexOf(pages['oemrMain'])>=0)
         (
             function()
             {
-                allScriptsLink="<a id='gmASLink' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
+                allScriptsLink="<a id='gmASLink' href='' class='css_button_small' style='float:right;'>"+"<span>Allscripts</span>"+"</a>";
                 $("#gmASLink").live({click:function()
                     {
+                        window.alert(window.browser.tabs.length);
                         winAS=window.open("https://eprescribe.allscripts.com/default.aspx","Allscripts");
                         GM_setValue("searchState","not found");
+                        
                     }});
                 $("#current_patient_block").append(allScriptsLink);
                 
