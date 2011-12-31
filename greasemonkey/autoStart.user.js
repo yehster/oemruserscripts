@@ -6,6 +6,7 @@
 // @include       http://192.168.227.128/openemr/*
 // @include       http://yehster.no-ip.org:5900/openemr/*
 // @include       http://192.168.1.60:5900/openemr/* 
+// @include       http://ubuntu/openemr/*
 // @exclude       
 // @exclude
 // ==/UserScript==

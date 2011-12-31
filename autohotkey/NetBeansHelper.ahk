@@ -1,5 +1,8 @@
 #SingleInstance force
-
+IfWinNotExist, ahk_class SunAwtFrame
+{
+	Run, "C:\Program Files\NetBeans 7.0\bin\netbeans.exe"
+}
 #IfWinActive ahk_class MozillaWindowClass
 F5::
 WinGetTitle, winTitle

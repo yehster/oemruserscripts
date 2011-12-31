@@ -1,6 +1,9 @@
 #SingleInstance force
-
-#IfWinActive ahk_class MozillaWindowClass
+IfWinNotExist, ahk_class MozillaWindowClass
+{
+	Run, "C:\Program Files\NetBeans 7.0\bin\netbeans.exe"
+}
+#IfWinActive ahk_class SunAwtFrame
 F5::
 WinGetTitle, winTitle
 if(InStr(winTitle,"OpenEMR"))
@@ -40,7 +43,8 @@ F5::
 	}
 	if(InStr(winTitle,"oemrdoc"))
 	{
-		MsgBox, "OEMRDOC"
+		Send ^s
+		WinActivate, ahk_class MozillaWindowClass	
 	}
 	return
  
