@@ -33,7 +33,7 @@ function tagInfo(location,code,info,parent,type)
     var data="code="+escape(code)+"&info="+escape(info)+"&location="+escape(location)+"&type="+escape(type);
     if(parent!=null)
         {
-            data=data+"&parent="+escape(parent.text());
+            data=data+"&parent="+escape(parent);
         }
     if($("#links").length==1)
         {
@@ -49,6 +49,21 @@ function tagInfo(location,code,info,parent,type)
     onload: function() {}
 });
 }
+
+function createDefinition(code,seq,info)
+{
+    var data="code="+escape(code)+"&info="+escape(info)+"&seq="+escape(seq)
+    GM_xmlhttpRequest({
+    method: "POST",
+    data: data, 
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    url:     "http://192.168.81.200/openemr/library/doctrine/maint/icd9scrape/createDefinition.php",
+    onload: function() {}
+});
+}
+
 
 function handleCodeAnchor(idx,element)
 {
@@ -105,10 +120,14 @@ function parseCodeInfo(data)
                     }
             tagInfo("",codeText,description,codeParent,type);
             debugInfo(codeText+":"+description+":"+level+":"+codeParent+":"+img);
-            definitions=curCode.find("ul.definitionList");
+            definitions=curCode.find("ul.definitionList li");
             if(definitions.length>0)
                 {
-                    debugInfo(definitions.find("li").text());
+                    for(var defIdx=0;defIdx<definitions.length;defIdx++)
+                        {
+                            curDef=definitions.eq(defIdx);
+                            createDefinition(codeText,defIdx,curDef.text())
+                        }
                 }
         }
 }
