@@ -23,9 +23,31 @@ function debugInfo(text)
     debugDiv=$("body").find("#gmDebugInfo");
     if(debugDiv.length==0)
         {
-            debugDiv=$("<div id='#gmDebugInfo'></div>").prependTo($("body"));
+            debugDiv=$("<div id='gmDebugInfo'></div>").prependTo($("body"));
+            debugDiv=$("body").find("#gmDebugInfo");
         }
     $("<div>"+text+"</div>").appendTo(debugDiv);
+}
+function tagInfo(location,code,info,parent,type)
+{
+    var data="code="+escape(code)+"&info="+escape(info)+"&location="+escape(location)+"&type="+escape(type);
+    if(parent!=null)
+        {
+            data=data+"&parent="+escape(parent.text());
+        }
+    if($("#links").length==1)
+        {
+            data=data+"&links="+escape($("#links").text());
+        }
+    GM_xmlhttpRequest({
+    method: "POST",
+    data: data, 
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    },
+    url:     "http://192.168.81.200/openemr/library/doctrine/maint/icd9scrape/icd9scrape.php",
+    onload: function() {}
+});
 }
 
 function handleCodeAnchor(idx,element)
@@ -40,11 +62,14 @@ function styleIframe()
     $("<style>iframe.nav{width:1200px;height:800px;}</style>").appendTo($("body"));
 }
 
+var nonSpecificImage="/Images/multiNonSpecificRed.gif";
+var SpecificImage="/Images/SpecificGreen.gif";
+
 function parseCodeInfo(data)
 {
     fullInfo=$(data.responseText);
     info=fullInfo.find("div.codeHierarchyInnerWrapper");
-    info.prependTo($("body"));
+    $("#gmDebugInfo").after(info);
     codes=info.children("div");
     var parents={};
     for(var idx=0;idx<codes.length;idx++)
@@ -52,9 +77,12 @@ function parseCodeInfo(data)
             var curCode=codes.eq(idx);
             desc=curCode.find("div.threeDigitCodeListDescription");
             var code=curCode.find("a.codeLink");
+            var img=curCode.find("img.specificImage").attr("src")==SpecificImage;
+            
             var codeText=code.attr("name");
             var level=parseInt(curCode.attr("class").substr(1,1));
             var codeParent="";
+            
             parents[level]=codeText;
             if(level>1)
                 {
@@ -66,11 +94,21 @@ function parseCodeInfo(data)
                     }
                     
             description =desc.text();
-            debugInfo(codeText+":"+description+":"+level+":"+codeParent);
+            var type;
+            if(img)
+                {
+                    type="SP";
+                }
+                else
+                    {
+                        type="NS";
+                    }
+            tagInfo("",codeText,description,codeParent,type);
+            debugInfo(codeText+":"+description+":"+level+":"+codeParent+":"+img);
             definitions=curCode.find("ul.definitionList");
             if(definitions.length>0)
                 {
-                    
+                    debugInfo(definitions.find("li").text());
                 }
         }
 }
@@ -92,27 +130,7 @@ function handleLowestCode(idx,element)
         });
     
 }
-function tagSection(location,code,info,parent)
-{
-    var data="code="+escape(code)+"&info="+escape(info)+"&location="+escape(location)+"&type="+escape("SECTION");
-    if(parent.length>0)
-        {
-            data=data+"&parent="+escape(parent.text());
-        }
-    if($("#links").length==1)
-        {
-            data=data+"&links="+escape($("#links").text());
-        }
-    GM_xmlhttpRequest({
-    method: "POST",
-    data: data, 
-    headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-    },
-    url:     "http://192.168.81.200/openemr/library/doctrine/maint/icd9scrape/icd9scrape.php",
-    onload: function() {}
-});
-}
+
 function dispatch(location)
 {
     debugInfo(location);
@@ -129,7 +147,15 @@ function dispatch(location)
 
             codeSpan=codeIdentifier.find("span.identifier");
             parentElem=$("div.navBreadcrumb a.identifier");
-            tagSection(location,codeSpan.text(),codeIdentifier.text(),parentElem);
+            if(parentElem.length==1)
+                {
+                    parentText=parentElem.text();
+                }
+                else
+                    {
+                        parentText=null;
+                    }
+            tagInfo(location,codeSpan.text(),codeIdentifier.text(),parentText,"SECTION");
         }
     if(codeList.length==1)
         {
